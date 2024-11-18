@@ -1,9 +1,14 @@
-FROM rabbitmq:3.8.0-management
+# Use the prebuilt RabbitMQ image with the delayed message exchange plugin
+FROM heidiks/rabbitmq-delayed-message-exchange:latest
 
+# Optional: Copy your custom configuration file
 COPY rabbitmq.conf /etc/rabbitmq/
 
+# Set environment variables
 ENV RABBITMQ_NODENAME=rabbit@localhost
 
+# Set permissions for the configuration file
 RUN chown rabbitmq:rabbitmq /etc/rabbitmq/rabbitmq.conf
 
+# Specify the default user
 USER rabbitmq:rabbitmq
