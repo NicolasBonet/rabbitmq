@@ -1,14 +1,22 @@
-# Use the prebuilt RabbitMQ image with the delayed message exchange plugin
-FROM heidiks/rabbitmq-delayed-message-exchange:3.13.3
+FROM rabbitmq:3.8.0-management
 
-# Optional: Copy your custom configuration file
 COPY rabbitmq.conf /etc/rabbitmq/
 
-# Set environment variables
 ENV RABBITMQ_NODENAME=rabbit@localhost
 
-# Set permissions for the configuration file
 RUN chown rabbitmq:rabbitmq /etc/rabbitmq/rabbitmq.conf
 
-# Specify the default user
 USER rabbitmq:rabbitmq
+
+RUN mkdir -p /plugins && \
+	curl -fsSL \
+	-o "/plugins/rabbitmq_delayed_message_exchange-${PLUGIN_VERSION}.ez" \
+	https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v3.8.0/rabbitmq_delayed_message_exchange-3.8.0.ez
+
+COPY --from=builder --chown=rabbitmq:rabbitmq \
+	/plugins/rabbitmq_delayed_message_exchange-${PLUGIN_VERSION}.ez \
+	$RABBITMQ_HOME/plugins/rabbitmq_delayed_message_exchange-${PLUGIN_VERSION}.ez
+
+RUN rabbitmq-plugins enable rabbitmq_delayed_message_exchange
+
+RUN rabbitmq-plugins enable rabbitmq_consistent_hash_exchange
